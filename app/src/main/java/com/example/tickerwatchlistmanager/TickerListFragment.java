@@ -24,6 +24,8 @@ public class TickerListFragment extends Fragment {
         super.onAttach(context);
         if (context instanceof OnTickerSelectedListener) {
             listener = (OnTickerSelectedListener) context;
+        } else {
+            throw new ClassCastException(context + " must implement OnTickerSelectedListener");
         }
     }
 
@@ -32,11 +34,13 @@ public class TickerListFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_ticker_list, container, false);
 
         ListView listView = view.findViewById(R.id.ticker_list_view);
+
         if (tickers.isEmpty()) {
             tickers.add("NEE");
             tickers.add("AAPL");
             tickers.add("DIS");
         }
+
         adapter = new ArrayAdapter<>(
                 requireContext(),
                 android.R.layout.simple_list_item_1,
@@ -52,15 +56,25 @@ public class TickerListFragment extends Fragment {
         return view;
     }
 
-    public void addTicker(String ticker) {
-        // Avoid duplicates
-        if (tickers.contains(ticker)) return;
-        if (tickers.size() < 6) {
-            tickers.add(ticker);
-        } else {
-            // Replace the 6th ticker
-            tickers.set(5, ticker);
+    public void addOrUpdateTicker(String ticker) {
+        if (ticker == null || ticker.isEmpty()) {
+            return;
         }
-        adapter.notifyDataSetChanged();
+
+        String upperTicker = ticker.toUpperCase();
+
+        if (tickers.contains(upperTicker)) {
+            return;
+        }
+
+        if (tickers.size() < 6) {
+            tickers.add(upperTicker);
+        } else {
+            tickers.set(5, upperTicker);
+        }
+
+        if (adapter != null) {
+            adapter.notifyDataSetChanged();
+        }
     }
 }
